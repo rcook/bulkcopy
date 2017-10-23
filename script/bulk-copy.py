@@ -10,6 +10,7 @@ import os
 import re
 
 from pyprelude.file_system import make_path
+from pysimplevcs.git_util import git_clone
 
 from bulkcopylib.bitbucket import make_bitbucket_url_cache
 from bulkcopylib.util import make_url
@@ -36,9 +37,18 @@ def _main(args):
         repos.extend(filter(lambda x: x["scm"] == "git" and repo_filter.is_match(x), unfiltered_repos))
         next_url = repos_obj.get("next")
 
-    print(len(repos))
     for repo in repos:
-        print(repo["name"])
+        repo_name = repo["name"]
+        local_dir = make_path(args.cache_dir, "_repos", repo_name)
+        if os.path.isdir(local_dir):
+            print("Repo \"{}\" already mirrored".format(repo_name))
+        else:
+            print("Mirroring \"{}\"".format(repo_name))
+            parent_dir = os.path.dirname(local_dir)
+            if not os.path.isdir(parent_dir):
+                os.makedirs(parent_dir)
+            git_url = "git@bitbucket.org:{}/{}.git".format(args.user, repo_name)
+            git_clone("--mirror", git_url, local_dir)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -1,2 +1,3 @@
 pyprelude
+pysimplevcs
 requests_oauthlib
