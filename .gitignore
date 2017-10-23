@@ -1,0 +1,12 @@
+/script/.Python
+/script/bin/
+/script/Include/
+/script/include/
+/script/Lib/
+/script/lib/
+/script/local/
+/script/Scripts/
+/script/tcl/
+/script/lib64
+/script/pip-selfcheck.json
+*.pyc

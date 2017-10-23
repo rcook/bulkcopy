@@ -1,0 +1,2 @@
+pyprelude
+requests_oauthlib
