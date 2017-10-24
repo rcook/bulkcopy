@@ -7,8 +7,21 @@ from pyprelude.file_system import make_path
 def _encode_url(url):
     return urllib.quote_plus(url)
 
+class SimpleUrlProvider(object):
+    def __init__(self):
+        pass
+
+    def get(self, url):
+        u = None
+        try:
+            u = urllib2.urlopen(url)
+            return u.read()
+        finally:
+            if u:
+                u.close()
+
 class UrlCache(object):
-    def __init__(self, url_provider, cache_path):
+    def __init__(self, cache_path, url_provider=SimpleUrlProvider()):
         self._url_provider = url_provider
         self._cache_path = cache_path
         if not os.path.isdir(self._cache_path):
@@ -24,16 +37,3 @@ class UrlCache(object):
             with open(path, "wb") as f:
                 f.write(s)
             return s
-
-class SimpleUrlProvider(object):
-    def __init__(self):
-        pass
-
-    def get(self, url):
-        u = None
-        try:
-            u = urllib2.urlopen(url)
-            return u.read()
-        finally:
-            if u:
-                u.close()

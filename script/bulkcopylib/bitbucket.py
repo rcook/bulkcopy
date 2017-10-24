@@ -31,4 +31,4 @@ class _BitbucketUrlProvider(object):
 
 def make_bitbucket_url_cache(api_key, api_secret, cache_dir):
     url_provider = _BitbucketUrlProvider(api_key, api_secret)
-    return UrlCache(url_provider, cache_dir)
+    return UrlCache(cache_dir, url_provider=url_provider)
