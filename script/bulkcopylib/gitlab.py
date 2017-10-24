@@ -1,4 +1,5 @@
 import json
+import urllib
 
 from bulkcopylib.url_cache import UrlCache
 
@@ -11,10 +12,14 @@ class GitLab(object):
         self._user = user
 
     def create_project(self, name, visibility="private"):
-        self._cache.provider.post(_GITLAB_API_URL, "/projects", private_token=self._api_token, _data={
+        self._cache.provider.post(_GITLAB_API_URL, "projects", private_token=self._api_token, _data={
             "name": name,
             "visibility": visibility
         })
+
+    def delete_project(self, name):
+        full_name = urllib.quote_plus("{}/{}".format(self._user, name))
+        self._cache.provider.delete(_GITLAB_API_URL, "projects", full_name, _data={ "private_token": self._api_token })
 
     def user_projects(self):
         return json.loads(self._cache.provider.get(_GITLAB_API_URL, "users", self._user, "projects", private_token=self._api_token))
