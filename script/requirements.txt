@@ -1,3 +1,4 @@
+configargparse
 pyprelude
 pysimplevcs
 requests_oauthlib

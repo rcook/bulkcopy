@@ -4,7 +4,7 @@
 ##################################################
 
 from __future__ import print_function
-import argparse
+import configargparse
 import json
 import os
 import re
@@ -24,8 +24,8 @@ class _RepoFilter(object):
     def is_match(self, repo):
         return self._re.match(repo["name"]) is not None
 
-def _main(args):
-    cache = make_bitbucket_url_cache(args.bitbucket_key, args.bitbucket_secret, args.cache_dir)
+def _main_inner(args):
+    cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.cache_dir)
 
     repo_filter = _RepoFilter(args.filter)
 
@@ -50,12 +50,15 @@ def _main(args):
             git_url = "git@bitbucket.org:{}/{}.git".format(args.user, repo_name)
             git_clone("--mirror", git_url, local_dir)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+def _main():
+    parser = configargparse.ArgumentParser()
     parser.add_argument("--cache-dir", "-c", default=make_path(os.path.expanduser("~/.bulkcopy")))
     parser.add_argument("--user", "-u", default=os.environ.get("USERNAME"))
-    parser.add_argument("--bitbucket-key", "-k", default=os.environ.get("BITBUCKET_API_KEY"))
-    parser.add_argument("--bitbucket-secret", "-s", default=os.environ.get("BITBUCKET_API_SECRET"))
+    parser.add_argument("--bitbucket-api-key", "-k", env_var="BITBUCKET_API_KEY", required=True)
+    parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=True)
     parser.add_argument("--filter", "-f", required=True)
     args = parser.parse_args()
-    _main(args)
+    _main_inner(args)
+
+if __name__ == "__main__":
+    _main()
