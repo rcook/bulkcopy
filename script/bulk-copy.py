@@ -32,7 +32,7 @@ def _main(args):
     repos = []
     next_url = make_url(_BITBUCKET_API_URL, "repositories", args.user)
     while next_url is not None:
-        repos_obj = json.loads(cache.fetch(next_url))
+        repos_obj = json.loads(cache.get(next_url))
         unfiltered_repos = repos_obj["values"]
         repos.extend(filter(lambda x: x["scm"] == "git" and repo_filter.is_match(x), unfiltered_repos))
         next_url = repos_obj.get("next")

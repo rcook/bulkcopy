@@ -11,7 +11,7 @@ class _BitbucketUrlProvider(object):
         self._bitbucket_secret = bitbucket_secret
         self._bitbucket = None
 
-    def fetch(self, url):
+    def get(self, url):
         self._do_oauth_dance()
         response = self._bitbucket.get(url)
         response.raise_for_status()

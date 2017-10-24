@@ -14,13 +14,13 @@ class UrlCache(object):
         if not os.path.isdir(self._cache_path):
             os.makedirs(self._cache_path)
 
-    def fetch(self, url):
+    def get(self, url):
         path = make_path(self._cache_path, _encode_url(url))
         if os.path.isfile(path):
             with open(path, "rb") as f:
                 return f.read()
         else:
-            s = self._url_provider.fetch(url)
+            s = self._url_provider.get(url)
             with open(path, "wb") as f:
                 f.write(s)
             return s
@@ -29,7 +29,7 @@ class SimpleUrlProvider(object):
     def __init__(self):
         pass
 
-    def fetch(self, url):
+    def get(self, url):
         u = None
         try:
             u = urllib2.urlopen(url)
