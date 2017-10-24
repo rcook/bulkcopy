@@ -20,5 +20,18 @@ class Project(object):
     def name(self): return self._name
 
     @property
+    def full_name(self): return self._full_name
+
+    @property
+    def description(self): return self._description
+
+    @property
     def scm(self): return self._scm
 
+    @property
+    def is_private(self): return self._is_private
+
+    @property
+    def is_archived(self): return self._is_archived
+
+    def clone_link(self, key): return self._clone_links[key]
