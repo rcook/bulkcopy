@@ -11,7 +11,8 @@ class _BitbucketUrlProvider(object):
         self._api_secret = api_secret
         self._client = None
 
-    def get(self, url):
+    def get(self, *args, **kwargs):
+        url = make_url(*args, **kwargs)
         self._do_oauth_dance()
         response = self._client.get(url)
         response.raise_for_status()
@@ -30,5 +31,5 @@ class _BitbucketUrlProvider(object):
                 password=self._api_secret)
 
 def make_bitbucket_url_cache(api_key, api_secret, cache_dir):
-    url_provider = _BitbucketUrlProvider(api_key, api_secret)
-    return UrlCache(cache_dir, url_provider=url_provider)
+    provider = _BitbucketUrlProvider(api_key, api_secret)
+    return UrlCache(cache_dir, provider=provider)

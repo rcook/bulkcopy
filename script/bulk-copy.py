@@ -13,11 +13,10 @@ from pyprelude.file_system import make_path
 from pysimplevcs.git_util import git_clone
 
 from bulkcopylib.bitbucket import make_bitbucket_url_cache
-from bulkcopylib.gitlab import make_gitlab_url_cache
+from bulkcopylib.gitlab import GitLab, make_gitlab_url_cache
 from bulkcopylib.util import make_url
 
 _BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
-_GITLAB_API_URL = "https://gitlab.com/api/v4"
 
 class _RepoFilter(object):
     def __init__(self, regexp):
@@ -28,9 +27,9 @@ class _RepoFilter(object):
 
 def _gitlab_example(cache_dir, gitlab_api_token, user):
     cache = make_gitlab_url_cache(cache_dir)
-    url = make_url(_GITLAB_API_URL, "users", user, "projects", private_token=gitlab_api_token)
-    projects_obj = json.loads(cache.get(url))
-    for project in projects_obj:
+    g = GitLab(cache, gitlab_api_token, user)
+    #g.create_project("newly-created-project")
+    for project in g.user_projects():
         name = project["name"]
         is_archived = project["archived"] == "True"
         git_url = project["ssh_url_to_repo"]
