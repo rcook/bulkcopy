@@ -1,10 +1,14 @@
+##################################################
+# Copyright (C) 2017, All rights reserved.
+##################################################
+
 import os
 import urllib
 import urllib2
 
 from pyprelude.file_system import make_path
 
-from bulkcopylib.util import make_url
+from repotoollib.util import make_url
 
 def _encode_url(url):
     return urllib.quote_plus(url)

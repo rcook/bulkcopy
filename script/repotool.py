@@ -14,9 +14,9 @@ import urllib2
 from pyprelude.file_system import make_path
 from pysimplevcs.git_util import git_clone
 
-from bulkcopylib.bitbucket import make_bitbucket_url_cache
-from bulkcopylib.gitlab import GitLab, make_gitlab_url_cache
-from bulkcopylib.util import make_url
+from repotoollib.bitbucket import make_bitbucket_url_cache
+from repotoollib.gitlab import GitLab, make_gitlab_url_cache
+from repotoollib.util import make_url
 
 _BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
 
@@ -144,7 +144,7 @@ def _main_inner(args):
 
 def _main():
     parser = configargparse.ArgumentParser()
-    parser.add_argument("--cache-dir", "-c", default=make_path(os.path.expanduser("~/.bulkcopy")))
+    parser.add_argument("--cache-dir", "-c", default=make_path(os.path.expanduser("~/.repotool")))
     parser.add_argument("--user", "-u", default=os.environ.get("USERNAME"))
     parser.add_argument("--bitbucket-api-key", "-k", env_var="BITBUCKET_API_KEY", required=True)
     parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=True)

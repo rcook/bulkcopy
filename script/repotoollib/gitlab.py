@@ -1,7 +1,11 @@
+##################################################
+# Copyright (C) 2017, All rights reserved.
+##################################################
+
 import json
 import urllib
 
-from bulkcopylib.url_cache import UrlCache
+from repotoollib.url_cache import UrlCache
 
 _GITLAB_API_URL = "https://gitlab.com/api/v4"
 

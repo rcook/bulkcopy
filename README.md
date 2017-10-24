@@ -1,11 +1,11 @@
-# bulk-copy by Richard Cook
+# repotool by Richard Cook
 
-Python tool with virtual environment wrappers
+Python wrappers around GitHub, GitLab and Bitbucket REST APIs
 
 ## Clone repository
 
 ```
-git clone https://github.com/rcook/bulkcopy.git
+git clone https://github.com/rcook/repotool.git
 ```
 
 ## Licence

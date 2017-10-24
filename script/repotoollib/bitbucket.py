@@ -1,6 +1,10 @@
+##################################################
+# Copyright (C) 2017, All rights reserved.
+##################################################
+
 from requests_oauthlib import OAuth2Session
 
-from bulkcopylib.url_cache import UrlCache
+from repotoollib.url_cache import UrlCache
 
 _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
