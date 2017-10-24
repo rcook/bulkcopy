@@ -2,54 +2,114 @@
 # Copyright (C) 2017, All rights reserved.
 ##################################################
 
+from __future__ import print_function
+import os
+import yaml
+
+from pyprelude.file_system import make_path
 from requests_oauthlib import OAuth2Session
 
-from repotoollib.url_cache import UrlCache
+from repotoollib.util import make_url
 
 _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
 _BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
 
-class _BitbucketUrlProvider(object):
-    def __init__(self, api_key, api_secret):
+class _Project(object):
+    def __init__(self, id, name, full_name, description, scm, is_private, is_archived, clone_links):
+        self._id = id
+        self._name = name
+        self._full_name = full_name
+        self._description = description
+        self._scm = scm
+        self._is_private = is_private
+        self._is_archived = is_archived
+        self._clone_links = clone_links
+
+    @property
+    def id(self): return self._id
+
+    @property
+    def name(self): return self._name
+
+    @property
+    def scm(self): return self._scm
+
+def _make_project(project_obj):
+    clone_links = { x["name"]: x["href"] for x in project_obj["links"]["clone"] }
+    return _Project(
+        project_obj["uuid"],
+        project_obj["name"],
+        project_obj["full_name"],
+        project_obj["description"],
+        project_obj["scm"],
+        project_obj["is_private"],
+        False,
+        clone_links)
+
+class Bitbucket(object):
+    def __init__(self, config_dir, user, api_key, api_secret):
+        self._cached_token_path = make_path(config_dir, "bitbucket.token.yaml")
+        self._user = user
         self._api_key = api_key
         self._api_secret = api_secret
         self._client = None
 
-    @property
-    def client(self):
-        self._do_oauth_dance()
-        return self._client
+    def user_projects(self):
+        projects = []
+        url = make_url(_BITBUCKET_API_URL, "repositories", self._user)
+        while url is not None:
+            projects_obj = self._get(url)
+            projects.extend(map(_make_project, projects_obj["values"]))
+            url = projects_obj.get("next")
 
-    def get(self, *args, **kwargs):
-        url = make_url(*args, **kwargs)
-        self._do_oauth_dance()
-        response = self._client.get(url)
-        response.raise_for_status()
-        return response.content
-
-    def _do_oauth_dance(self):
-        if self._client is None:
-            self._client = OAuth2Session(self._api_key)
-            auth_url = self._client.authorization_url(_BITBUCKET_AUTH_URL)
-            print("Please go here and authorize: {}".format(auth_url[0]))
-            redirect_response = raw_input("Paste full redirect URL here: ")
-            self._client.fetch_token(
-                _BITBUCKET_TOKEN_URL,
-                authorization_response=redirect_response,
-                username=self._api_key,
-                password=self._api_secret)
-
-class Bitbucket(object):
-    def __init__(self, cache, user):
-        self._cache = cache
-        self._user = user
-        self._client = self._cache.provider.client
+        return projects
 
     def delete_project(self, name):
         r = self._client.delete(_BITBUCKET_API_URL, "repositories", self._user, name)
         r.raise_for_status()
 
-def make_bitbucket_url_cache(api_key, api_secret, cache_dir):
-    provider = _BitbucketUrlProvider(api_key, api_secret)
-    return UrlCache(cache_dir, provider=provider)
+    def _get(self, *args, **kwargs):
+        url = make_url(*args, **kwargs)
+        self._do_oauth_dance()
+        r = self._client.get(url)
+        r.raise_for_status()
+        return r.json()
+
+    def _do_oauth_dance(self):
+        if self._client is None:
+            def _update_token(token):
+                self._save_token(token)
+
+            token = self._load_token()
+            self._client = OAuth2Session(
+                self._api_key,
+                token=token,
+                auto_refresh_url=_BITBUCKET_TOKEN_URL,
+                auto_refresh_kwargs={ "client_id": self._api_key, "client_secret": self._api_secret },
+                token_updater=_update_token)
+
+            if token is None:
+                auth_url = self._client.authorization_url(_BITBUCKET_AUTH_URL)
+                print("Please go here and authorize: {}".format(auth_url[0]))
+                redirect_response = raw_input("Paste full redirect URL here: ")
+                token = self._client.fetch_token(
+                    _BITBUCKET_TOKEN_URL,
+                    authorization_response=redirect_response,
+                    username=self._api_key,
+                    password=self._api_secret)
+                self._save_token(token)
+
+    def _load_token(self):
+        if os.path.isfile(self._cached_token_path):
+            with open(self._cached_token_path, "rt") as f:
+                return yaml.load(f)
+        else:
+            return None
+
+    def _save_token(self, token):
+        parent_dir = os.path.dirname(self._cached_token_path)
+        if not os.path.isdir(parent_dir):
+            os.makedirs(parent_dir)
+        with open(self._cached_token_path, "wt") as f:
+            yaml.dump(token, f, default_flow_style=False)

@@ -14,21 +14,12 @@ import urllib2
 from pyprelude.file_system import make_path
 from pysimplevcs.git_util import git_clone
 
-from repotoollib.bitbucket import make_bitbucket_url_cache
+from repotoollib.bitbucket import Bitbucket
 from repotoollib.gitlab import GitLab, make_gitlab_url_cache
 from repotoollib.util import make_url
 
-_BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
-
-class _RepoFilter(object):
-    def __init__(self, regexp):
-        self._re = re.compile(regexp)
-
-    def is_match(self, repo):
-        return self._re.match(repo["name"]) is not None
-
-def _gitlab_example(cache_dir, gitlab_api_token, user):
-    cache = make_gitlab_url_cache(cache_dir)
+def _gitlab_example(config_dir, gitlab_api_token, user):
+    cache = make_gitlab_url_cache(config_dir)
     g = GitLab(cache, gitlab_api_token, user)
     #g.create_project("newly-created-project")
     for project in g.user_projects():
@@ -41,19 +32,35 @@ def _gitlab_example(cache_dir, gitlab_api_token, user):
         print("  URL: {}".format(git_url))
         print("  visibility: {}".format(visibility))
 
+def _filter_projects(filter_expr, projects):
+    if filter_expr is None:
+        return projects
+    else:
+        regex = re.compile(filter_expr)
+        return filter(lambda p: p.scm == "git" and regex.match(p.name) is not None, projects)
+
 def _main_inner(args):
-    with open("projects.txt", "rt") as f:
-        project_names = map(lambda s: s.strip(), f.readlines())
+    bitbucket = Bitbucket(
+        args.config_dir,
+        args.user,
+        args.bitbucket_api_key,
+        args.bitbucket_api_secret)
 
-    gitlab_cache = make_gitlab_url_cache(args.cache_dir)
-    gitlab = GitLab(gitlab_cache, args.gitlab_api_token, args.user)
+    projects = _filter_projects(args.project_filter_expr, bitbucket.user_projects())
+    for project in sorted(projects, key=lambda x: x.name):
+        print("{}:".format(project.name))
+        print("  {}".format(project.id))
+        print("  {}".format(project.scm))
 
-    for project_name in project_names:
-        gitlab.archive_project(project_name)
-        print("Archived {}".format(project_name))
+    #gitlab_cache = make_gitlab_url_cache(args.config_dir)
+    #gitlab = GitLab(gitlab_cache, args.gitlab_api_token, args.user)
+
+    #for project_name in project_names:
+    #    gitlab.archive_project(project_name)
+    #    print("Archived {}".format(project_name))
 
     """
-    cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.cache_dir)
+    cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.config_dir)
     client = cache.provider.client
 
     for project_name in project_names:
@@ -66,11 +73,11 @@ def _main_inner(args):
 
 
     """
-    #gitlab_cache = make_gitlab_url_cache(args.cache_dir)
+    #gitlab_cache = make_gitlab_url_cache(args.config_dir)
     #gitlab = GitLab(gitlab_cache, args.gitlab_api_token, args.user)
-    #_gitlab_example(args.cache_dir, args.gitlab_api_token, args.user)
+    #_gitlab_example(args.config_dir, args.gitlab_api_token, args.user)
     #exit(1)
-    cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.cache_dir)
+    cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.config_dir)
 
     repo_filter = _RepoFilter(args.filter)
 
@@ -84,7 +91,7 @@ def _main_inner(args):
 
     for repo in repos:
         repo_name = repo["name"]
-        local_dir = make_path(args.cache_dir, "_repos", repo_name)
+        local_dir = make_path(args.config_dir, "_repos", repo_name)
         if os.path.isdir(local_dir):
             print("Repo \"{}\" already mirrored".format(repo_name))
         else:
@@ -144,12 +151,12 @@ def _main_inner(args):
 
 def _main():
     parser = configargparse.ArgumentParser()
-    parser.add_argument("--cache-dir", "-c", default=make_path(os.path.expanduser("~/.repotool")))
+    parser.add_argument("--config-dir", "-c", default=make_path(os.path.expanduser("~/.repotool")))
     parser.add_argument("--user", "-u", default=os.environ.get("USERNAME"))
     parser.add_argument("--bitbucket-api-key", "-k", env_var="BITBUCKET_API_KEY", required=True)
     parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=True)
     parser.add_argument("--gitlab-api-token", "-t", env_var="GITLAB_API_TOKEN", required=True)
-    parser.add_argument("--filter", "-f", required=True)
+    parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
     args = parser.parse_args()
     _main_inner(args)
 
