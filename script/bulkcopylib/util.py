@@ -27,6 +27,9 @@ def make_url(*args, **kwargs):
     if temp_arg_count > 1 and isinstance(temp_args[-1], list):
         path_fragments = temp_args[0 : -1]
         query_string = urllib.urlencode(temp_args[-1] + kwargs.items())
+    elif temp_arg_count > 1 and isinstance(temp_args[-1], dict):
+        path_fragments = temp_args[0 : -1]
+        query_string = urllib.urlencode(temp_args[-1].items() + kwargs.items())
     else:
         path_fragments = temp_args
         query_string = urllib.urlencode(kwargs)

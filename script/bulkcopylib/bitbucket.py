@@ -4,12 +4,18 @@ from bulkcopylib.url_cache import UrlCache
 
 _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
+_BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
 
 class _BitbucketUrlProvider(object):
     def __init__(self, api_key, api_secret):
         self._api_key = api_key
         self._api_secret = api_secret
         self._client = None
+
+    @property
+    def client(self):
+        self._do_oauth_dance()
+        return self._client
 
     def get(self, *args, **kwargs):
         url = make_url(*args, **kwargs)
@@ -29,6 +35,16 @@ class _BitbucketUrlProvider(object):
                 authorization_response=redirect_response,
                 username=self._api_key,
                 password=self._api_secret)
+
+class Bitbucket(object):
+    def __init__(self, cache, user):
+        self._cache = cache
+        self._user = user
+        self._client = self._cache.provider.client
+
+    def delete_project(self, name):
+        r = self._client.delete(_BITBUCKET_API_URL, "repositories", self._user, name)
+        r.raise_for_status()
 
 def make_bitbucket_url_cache(api_key, api_secret, cache_dir):
     provider = _BitbucketUrlProvider(api_key, api_secret)

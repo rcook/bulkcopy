@@ -8,6 +8,8 @@ import configargparse
 import json
 import os
 import re
+import requests
+import urllib2
 
 from pyprelude.file_system import make_path
 from pysimplevcs.git_util import git_clone
@@ -40,8 +42,34 @@ def _gitlab_example(cache_dir, gitlab_api_token, user):
         print("  visibility: {}".format(visibility))
 
 def _main_inner(args):
-    _gitlab_example(args.cache_dir, args.gitlab_api_token, args.user)
-    exit(1)
+    with open("projects.txt", "rt") as f:
+        project_names = map(lambda s: s.strip(), f.readlines())
+
+    gitlab_cache = make_gitlab_url_cache(args.cache_dir)
+    gitlab = GitLab(gitlab_cache, args.gitlab_api_token, args.user)
+
+    for project_name in project_names:
+        gitlab.archive_project(project_name)
+        print("Archived {}".format(project_name))
+
+    """
+    cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.cache_dir)
+    client = cache.provider.client
+
+    for project_name in project_names:
+        url = make_url(_BITBUCKET_API_URL, "repositories", args.user, project_name)
+        r = client.delete(url)
+        r.raise_for_status()
+        #r.content
+        print("Deleted {}".format(project_name))
+    """
+
+
+    """
+    #gitlab_cache = make_gitlab_url_cache(args.cache_dir)
+    #gitlab = GitLab(gitlab_cache, args.gitlab_api_token, args.user)
+    #_gitlab_example(args.cache_dir, args.gitlab_api_token, args.user)
+    #exit(1)
     cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.cache_dir)
 
     repo_filter = _RepoFilter(args.filter)
@@ -66,6 +94,53 @@ def _main_inner(args):
                 os.makedirs(parent_dir)
             git_url = "git@bitbucket.org:{}/{}.git".format(args.user, repo_name)
             git_clone("--mirror", git_url, local_dir)
+    """
+
+    """
+    projects = []
+    page_id = None
+    while True:
+        query = {
+            "private_token": args.gitlab_api_token,
+            "per_page": 300
+        }
+        if page_id is not None:
+            query["page"] = page_id
+
+        url = make_url(
+            "https://gitlab.com/api/v4",
+            "users",
+            args.user,
+            "projects",
+            query)
+        print(url)
+        r = requests.get(url)
+
+        projects_obj = r.json()
+        for project in projects_obj:
+            project_name = project["name"]
+            if project_name.startswith("fast-export-") or project_name.startswith("backup-"):
+                projects.append(project)
+
+        page_id = r.headers.get("X-Next-Page")
+        if page_id is None or len(page_id) == 0:
+            break
+
+    with open("projects.txt", "wt") as f:
+        for project in projects:
+            f.write(project["name"] + "\n")
+
+    print(len(projects))
+    exit(0)
+
+    projects_obj = gitlab.user_projects()
+    print(len(projects_obj))
+    exit(0)
+    for project in projects_obj:
+        project_name = project["name"]
+        if project_name.startswith("fast-export-") or project_name.startswith("backup-"):
+            print(project_name)
+    """
 
 def _main():
     parser = configargparse.ArgumentParser()
