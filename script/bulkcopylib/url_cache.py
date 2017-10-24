@@ -27,9 +27,9 @@ class UrlCache(object):
         if not os.path.isdir(self._cache_path):
             os.makedirs(self._cache_path)
 
-    def get(self, url):
+    def get(self, url, bypass_cache=False):
         path = make_path(self._cache_path, _encode_url(url))
-        if os.path.isfile(path):
+        if not bypass_cache and os.path.isfile(path):
             with open(path, "rb") as f:
                 return f.read()
         else:
