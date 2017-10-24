@@ -13,9 +13,11 @@ from pyprelude.file_system import make_path
 from pysimplevcs.git_util import git_clone
 
 from bulkcopylib.bitbucket import make_bitbucket_url_cache
+from bulkcopylib.gitlab import make_gitlab_url_cache
 from bulkcopylib.util import make_url
 
 _BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
+_GITLAB_API_URL = "https://gitlab.com/api/v4"
 
 class _RepoFilter(object):
     def __init__(self, regexp):
@@ -24,7 +26,23 @@ class _RepoFilter(object):
     def is_match(self, repo):
         return self._re.match(repo["name"]) is not None
 
+def _gitlab_example(cache_dir, gitlab_api_token, user):
+    cache = make_gitlab_url_cache(cache_dir)
+    url = make_url(_GITLAB_API_URL, "users", user, "projects", private_token=gitlab_api_token)
+    projects_obj = json.loads(cache.get(url))
+    for project in projects_obj:
+        name = project["name"]
+        is_archived = project["archived"] == "True"
+        git_url = project["ssh_url_to_repo"]
+        visibility = project["visibility"]
+        print("{}:".format(name))
+        print("  archived: {}".format(is_archived))
+        print("  URL: {}".format(git_url))
+        print("  visibility: {}".format(visibility))
+
 def _main_inner(args):
+    _gitlab_example(args.cache_dir, args.gitlab_api_token, args.user)
+    exit(1)
     cache = make_bitbucket_url_cache(args.bitbucket_api_key, args.bitbucket_api_secret, args.cache_dir)
 
     repo_filter = _RepoFilter(args.filter)
@@ -56,6 +74,7 @@ def _main():
     parser.add_argument("--user", "-u", default=os.environ.get("USERNAME"))
     parser.add_argument("--bitbucket-api-key", "-k", env_var="BITBUCKET_API_KEY", required=True)
     parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=True)
+    parser.add_argument("--gitlab-api-token", "-t", env_var="GITLAB_API_TOKEN", required=True)
     parser.add_argument("--filter", "-f", required=True)
     args = parser.parse_args()
     _main_inner(args)
