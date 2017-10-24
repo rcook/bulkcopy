@@ -9,35 +9,16 @@ import yaml
 from pyprelude.file_system import make_path
 from requests_oauthlib import OAuth2Session
 
+from repotoollib.project import Project
 from repotoollib.util import make_url
 
 _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
 _BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
 
-class _Project(object):
-    def __init__(self, id, name, full_name, description, scm, is_private, is_archived, clone_links):
-        self._id = id
-        self._name = name
-        self._full_name = full_name
-        self._description = description
-        self._scm = scm
-        self._is_private = is_private
-        self._is_archived = is_archived
-        self._clone_links = clone_links
-
-    @property
-    def id(self): return self._id
-
-    @property
-    def name(self): return self._name
-
-    @property
-    def scm(self): return self._scm
-
 def _make_project(project_obj):
     clone_links = { x["name"]: x["href"] for x in project_obj["links"]["clone"] }
-    return _Project(
+    return Project(
         project_obj["uuid"],
         project_obj["name"],
         project_obj["full_name"],

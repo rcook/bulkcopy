@@ -8,15 +8,11 @@ import configargparse
 import json
 import os
 import re
-import requests
-import urllib2
 
 from pyprelude.file_system import make_path
-from pysimplevcs.git_util import git_clone
 
 from repotoollib.bitbucket import Bitbucket
-from repotoollib.gitlab import GitLab, make_gitlab_url_cache
-from repotoollib.util import make_url
+from repotoollib.gitlab import GitLab
 
 def _gitlab_example(config_dir, gitlab_api_token, user):
     cache = make_gitlab_url_cache(config_dir)
@@ -40,13 +36,19 @@ def _filter_projects(filter_expr, projects):
         return filter(lambda p: p.scm == "git" and regex.match(p.name) is not None, projects)
 
 def _main_inner(args):
-    bitbucket = Bitbucket(
+    """
+    service = Bitbucket(
         args.config_dir,
         args.user,
         args.bitbucket_api_key,
         args.bitbucket_api_secret)
+    """
+    service = GitLab(
+        args.config_dir,
+        args.user,
+        args.gitlab_api_token)
 
-    projects = _filter_projects(args.project_filter_expr, bitbucket.user_projects())
+    projects = _filter_projects(args.project_filter_expr, service.user_projects())
     for project in sorted(projects, key=lambda x: x.name):
         print("{}:".format(project.name))
         print("  {}".format(project.id))
