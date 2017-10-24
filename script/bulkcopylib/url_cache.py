@@ -14,10 +14,16 @@ class SimpleUrlProvider(object):
         pass
 
     def get(self, *args, **kwargs):
-        return self._do_request("GET", make_url(*args, **kwargs), data=kwargs.pop("_data", None))
+        data = kwargs.pop("_data", None)
+        return self._do_request("GET", make_url(*args, **kwargs), data=data)
 
     def post(self, *args, **kwargs):
-        return self._do_request("POST", make_url(*args, **kwargs), data=kwargs.pop("_data", None))
+        data = kwargs.pop("_data", None)
+        return self._do_request("POST", make_url(*args, **kwargs), data=data)
+
+    def delete(self, *args, **kwargs):
+        data = kwargs.pop("_data", None)
+        return self._do_request("DELETE", make_url(*args, **kwargs), data=data)
 
     def _do_request(self, method, url, data=None):
         handler = urllib2.HTTPHandler()
