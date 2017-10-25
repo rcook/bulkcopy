@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 import configargparse
+import itertools
 import os
 import re
 
@@ -21,6 +22,19 @@ def _filter_projects(filter_expr, projects):
         regex = re.compile(filter_expr)
         return filter(lambda p: p.scm == "git" and regex.match(p.name) is not None, projects)
 
+def _dump_all(projects):
+    for project in projects:
+        print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
+
+def _dump_similar(projects):
+    groups = itertools.groupby(projects, lambda p: p.name)
+    for key, group_iter in groups:
+        group = list(group_iter)
+        if len(group) > 1:
+            print("{}:".format(key))
+            for project in group:
+                print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
+
 def _main_inner(args):
     services = [
         Bitbucket(args.config_dir, args.user, args.bitbucket_api_key, args.bitbucket_api_secret),
@@ -32,11 +46,9 @@ def _main_inner(args):
     for service in services:
         all_projects.extend(service.user_projects())
 
-    projects = _filter_projects(args.project_filter_expr, all_projects)
-    for project in sorted(projects, key=lambda x: x.name):
-        print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
-
-    print("Total: {} projects".format(len(projects)))
+    projects = sorted(_filter_projects(args.project_filter_expr, all_projects), key=lambda p: p.name)
+    _dump_all(projects)
+    _dump_similar(projects)
 
 def _main():
     default_config_dir = make_path(os.path.expanduser("~/.repotool"))
