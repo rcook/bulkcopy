@@ -23,7 +23,6 @@ def _filter_projects(filter_expr, projects):
         return projects
     else:
         regex = re.compile(filter_expr)
-        #return filter(lambda p: p.scm == "git" and regex.match(p.name) is not None, projects)
         return filter(lambda p: regex.match(p.name) is not None, projects)
 
 def _get_project_providers(args):
@@ -43,19 +42,20 @@ def _get_project_providers(args):
 def _show_providers(providers):
     print("Providers: {}".format("(none)" if len(providers) == 0 else ", ".join(map(lambda p: p.provider_name, providers))))
 
-def _get_projects(providers, project_filter_expr):
+def _get_projects(providers):
     all_projects = []
     for provider in providers:
         all_projects.extend(provider.user_projects())
 
-    projects = sorted(_filter_projects(project_filter_expr, all_projects), key=_PROJECT_KEY_FUNC)
+    projects = sorted(all_projects, key=_PROJECT_KEY_FUNC)
     return projects
 
 def _do_list(args):
     providers = _get_project_providers(args)
     _show_providers(providers)
 
-    projects = _get_projects(providers, args.project_filter_expr)
+    all_projects = _get_projects(providers)
+    projects = _filter_projects(args.project_filter_expr, all_projects)
     for project in projects:
         print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
 
@@ -65,16 +65,20 @@ def _do_dupes(args):
     providers = _get_project_providers(args)
     _show_providers(providers)
 
-    projects = _get_projects(providers, args.project_filter_expr)
+    projects = _get_projects(providers)
 
     groups = itertools.groupby(projects, _PROJECT_KEY_FUNC)
+    group_count = 0
     for key, group_iter in groups:
         group = list(group_iter)
         if len(group) > 1:
+            group_count += 1
             project_name, _ = key
             print("{}:".format(project_name))
             for project in group:
                 print("  {} [{}] {}".format(project.provider.provider_name, project.id, project.clone_link("ssh")))
+
+    print("Total: {} groups".format(group_count))
 
 def _main():
     default_config_dir = make_path(os.path.expanduser("~/.repotool"))
@@ -86,11 +90,11 @@ def _main():
     parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=False, is_config_file=True)
     parser.add_argument("--gitlab-api-token", "-t", env_var="GITLAB_API_TOKEN", required=False, is_config_file=True)
     parser.add_argument("--github-api-token", "-g", env_var="GITHUB_API_TOKEN", required=False, is_config_file=True)
-    parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
 
     subparsers = parser.add_subparsers(help="subcommand help")
 
     list_parser = subparsers.add_parser("list", help="List projects")
+    list_parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
     list_parser.set_defaults(func=_do_list)
 
     dupes_parser = subparsers.add_parser("dupes", help="Show possible duplicate projects")
