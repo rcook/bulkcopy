@@ -40,11 +40,16 @@ class Bitbucket(object):
     @property
     def provider_name(self): return "Bitbucket"
 
-    def user_projects(self):
+    def get_project(self, project_name):
+        r = self._do_request("get", "repositories", self._user, project_name)
+        return _make_project(self, r.json())
+
+    def get_projects(self):
         projects = []
         url = make_url(_BITBUCKET_API_URL, "repositories", self._user)
         while url is not None:
-            projects_obj = self._get(url)
+            r = self._do_request_raw("get", url)
+            projects_obj = r.json()
             projects.extend(map(lambda o: _make_project(self, o), projects_obj["values"]))
             url = projects_obj.get("next")
 
@@ -54,20 +59,26 @@ class Bitbucket(object):
         if not confirmation_token:
             raise RuntimeError("Dangerous operation disallowed")
 
-        self._delete(_BITBUCKET_API_URL, "repositories", self._user, name_or_id)
+        if self != project.provider:
+            raise RuntimeError("Project does not belong to this provider")
 
-    def _get(self, *args, **kwargs):
-        url = make_url(*args, **kwargs)
-        self._do_oauth_dance()
-        r = self._client.get(url)
-        r.raise_for_status()
-        return r.json()
+        self._delete(_BITBUCKET_API_URL, "repositories", self._user, name_or_id)
 
     def _delete(self, *args, **kwargs):
         url = make_url(*args, **kwargs)
         self._do_oauth_dance()
         r = self._client.delete(url)
         r.raise_for_status()
+
+    def _do_request(self, method, *args, **kwargs):
+        url = make_url(*[_BITBUCKET_API_URL] + list(args), **kwargs)
+        return self._do_request_raw(method, url)
+
+    def _do_request_raw(self, method, url):
+        self._do_oauth_dance()
+        r = self._client.request(method, url)
+        r.raise_for_status()
+        return r
 
     def _do_oauth_dance(self):
         if self._client is None:

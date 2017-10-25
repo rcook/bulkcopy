@@ -45,7 +45,7 @@ def _show_providers(providers):
 def _get_projects(providers):
     all_projects = []
     for provider in providers:
-        all_projects.extend(provider.user_projects())
+        all_projects.extend(provider.get_projects())
 
     projects = sorted(all_projects, key=_PROJECT_KEY_FUNC)
     return projects
@@ -85,7 +85,7 @@ def _do_info(args):
     provider_map = { p.provider_name: p for p in providers }
 
     provider = provider_map.get(args.provider_name)
-    project = provider.project(args.project_name)
+    project = provider.get_project(args.project_name)
 
     table = project.make_table()
     print()
@@ -114,7 +114,7 @@ def _do_delete(args):
     provider_map = { p.provider_name: p for p in providers }
 
     provider = provider_map.get(args.provider_name)
-    project = provider.project(args.project_name)
+    project = provider.get_project(args.project_name)
 
     confirmation_token = _confirm_delete(project)
     if not confirmation_token:

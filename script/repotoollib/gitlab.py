@@ -10,15 +10,6 @@ from repotoollib.util import make_url
 
 _GITLAB_API_URL = "https://gitlab.com/api/v4"
 
-def _encode_project_name(user, project_name):
-    return urllib.quote_plus("{}/{}".format(user, project_name))
-
-def _encode_project_name_or_id(user, project_name_or_id):
-    if isinstance(project_name_or_id, int):
-        return str(project_name_or_id)
-    else:
-        return _encode_project_name(user, project_name_or_id)
-
 def _make_project(provider, project_obj):
     clone_links = {
         "https": project_obj["http_url_to_repo"],
@@ -43,7 +34,11 @@ class GitLab(object):
     @property
     def provider_name(self): return "GitLab"
 
-    def user_projects(self):
+    def get_project(self, project_name):
+        r = self._do_request("get", "projects", self._encode_project_name(project_name), private_token=self._api_token)
+        return _make_project(self, r.json())
+
+    def get_projects(self):
         query = {
             "private_token": self._api_token,
             "per_page": 300
@@ -51,13 +46,7 @@ class GitLab(object):
 
         projects = []
         while True:
-            r = self._do_request(
-                "get",
-                _GITLAB_API_URL,
-                "users",
-                self._user,
-                "projects",
-                query)
+            r = self._do_request("get", "users", self._user, "projects", query)
             projects.extend(map(lambda o: _make_project(self, o), r.json()))
             page_id = r.headers.get("X-Next-Page")
             if page_id is None or len(page_id) == 0: break
@@ -65,41 +54,30 @@ class GitLab(object):
 
         return projects
 
-    def project(self, project_name):
-        r = self._do_request(
-            "get",
-            _GITLAB_API_URL,
-            "projects",
-            self._encode_project_name(project_name),
-            private_token=self._api_token)
-        return _make_project(self, r.json())
-
     def create_project(self, project_name, visibility="private"):
-        url = make_url(
-            _GITLAB_API_URL,
-            "projects",
-            private_token=self._api_token)
+        url = make_url(_GITLAB_API_URL, "projects", private_token=self._api_token)
         r = requests.post(url, data={ "name": project_name, "visibility": visibility })
         r.raise_for_status()
 
-    def delete_project(self, project_name, confirmation_token=False):
+    def delete_project(self, project, confirmation_token=False):
         if not confirmation_token:
             raise RuntimeError("Dangerous operation disallowed")
 
-        url = make_url(
-            _GITLAB_API_URL,
-            "projects",
-            _encode_project_name_or_id(self._user, project_name))
+        if self != project.provider:
+            raise RuntimeError("Project does not belong to this provider")
+
+        url = make_url(_GITLAB_API_URL, "projects", self._encode_project_name(project.name))
         r = requests.delete(url, data={ "private_token": self._api_token })
         r.raise_for_status()
 
-    def archive_project(self, project_name):
-        raise RuntimeError("Not implemented")
-        url = make_url(
-            _GITLAB_API_URL,
-            "projects",
-            _encode_project_name_or_id(self._user, project_name),
-            "archive")
+    def archive_project(self, project, confirmation_token=False):
+        if not confirmation_token:
+            raise RuntimeError("Dangerous operation disallowed")
+
+        if self != project.provider:
+            raise RuntimeError("Project does not belong to this provider")
+
+        url = make_url(_GITLAB_API_URL, "projects", self._encode_project_name(project.name), "archive")
         r = requests.post(url, data={ "private_token": self._api_token })
         r.raise_for_status()
 
@@ -107,7 +85,10 @@ class GitLab(object):
         return urllib.quote_plus("{}/{}".format(self._user, project_name))
 
     def _do_request(self, method, *args, **kwargs):
-        url = make_url(*args, **kwargs)
+        url = make_url(*[_GITLAB_API_URL] + list(args), **kwargs)
+        return self._do_request_raw(method, url)
+
+    def _do_request_raw(self, method, url):
         r = requests.request(method, url)
         r.raise_for_status()
         return r

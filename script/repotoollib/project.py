@@ -66,3 +66,9 @@ class Project(object):
             raise RuntimeError("Dangerous operation disallowed")
 
         self._provider.delete_project(self, confirmation_token=confirmation_token)
+
+    def archive(self, confirmation_token=True):
+        if not confirmation_token:
+            raise RuntimeError("Dangerous operation disallowed")
+
+        self._provider.archive_project(self, confirmation_token=confirmation_token)
