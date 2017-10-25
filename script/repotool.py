@@ -47,7 +47,7 @@ def _main_inner(args):
         all_projects.extend(service.user_projects())
 
     projects = sorted(_filter_projects(args.project_filter_expr, all_projects), key=lambda p: p.name)
-    _dump_all(projects)
+    #_dump_all(projects)
     _dump_similar(projects)
 
 def _main():
