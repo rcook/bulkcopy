@@ -19,6 +19,8 @@ def make_url(*args, **kwargs):
     'https://host/api'
     >>> make_url("https://host/api/")
     'https://host/api/'
+    >>> make_url("https://host/api", "users", "user-name", "projects")
+    'https://host/api/users/user-name/projects'
     """
     if len(args) == 1 and len(kwargs) == 0:
         # Return a single string unaltered
@@ -39,7 +41,11 @@ def make_url(*args, **kwargs):
         query_string = urllib.urlencode(kwargs)
 
     base_url = "/".join(map(lambda x: x.strip("/"), path_fragments))
-    parts = list(urlparse.urlparse(base_url + "/"))
+
+    if len(query_string) > 0:
+        base_url += "/"
+
+    parts = list(urlparse.urlparse(base_url))
     parts[4] = query_string
     return urlparse.urlunparse(parts)
 

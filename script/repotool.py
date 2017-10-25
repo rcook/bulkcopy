@@ -11,6 +11,7 @@ import re
 from pyprelude.file_system import make_path
 
 from repotoollib.bitbucket import Bitbucket
+from repotoollib.github import GitHub
 from repotoollib.gitlab import GitLab
 
 def _filter_projects(filter_expr, projects):
@@ -23,7 +24,8 @@ def _filter_projects(filter_expr, projects):
 def _main_inner(args):
     services = [
         Bitbucket(args.config_dir, args.user, args.bitbucket_api_key, args.bitbucket_api_secret),
-        GitLab(args.config_dir, args.user, args.gitlab_api_token)
+        GitLab(args.config_dir, args.user, args.gitlab_api_token),
+        GitHub(args.config_dir, args.user, args.github_api_token)
     ]
 
     all_projects = []
@@ -43,6 +45,7 @@ def _main():
     parser.add_argument("--bitbucket-api-key", "-k", env_var="BITBUCKET_API_KEY", required=True, is_config_file=True)
     parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=True, is_config_file=True)
     parser.add_argument("--gitlab-api-token", "-t", env_var="GITLAB_API_TOKEN", required=True, is_config_file=True)
+    parser.add_argument("--github-api-token", "-g", env_var="GITHUB_API_TOKEN", required=True, is_config_file=True)
     parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
     args = parser.parse_args()
     _main_inner(args)

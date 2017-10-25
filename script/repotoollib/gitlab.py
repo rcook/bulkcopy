@@ -2,7 +2,6 @@
 # Copyright (C) 2017, All rights reserved.
 ##################################################
 
-import json
 import requests
 import urllib
 
