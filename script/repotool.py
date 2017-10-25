@@ -78,7 +78,7 @@ def _do_dupes(args):
             for project in group:
                 print("  {} [{}] {}".format(project.provider.provider_name, project.id, project.clone_link("ssh")))
 
-    print("Total: {} groups".format(group_count))
+    print("Total: {} groups of possibly duplicate projects".format(group_count))
 
 def _do_info(args):
     providers = _get_project_providers(args)
