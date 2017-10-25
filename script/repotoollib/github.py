@@ -31,9 +31,18 @@ class GitHub(object):
         self._api_token = api_token
 
     def user_projects(self):
-        r = requests.get(
-            make_url(_GITHUB_API_URL, "users", self._user, "repos"),
-            auth=(self._user, self._api_token))
-        r.raise_for_status()
-        projects = map(_make_project, r.json())
+        projects = []
+
+        url = make_url(_GITHUB_API_URL, "users", self._user, "repos")
+        while True:
+            r = requests.get(
+                url,
+                auth=(self._user, self._api_token))
+            r.raise_for_status()
+
+            projects.extend(map(_make_project, r.json()))
+            next_link = r.links.get("next")
+            if next_link is None: break
+            url = next_link["url"]
+
         return projects
