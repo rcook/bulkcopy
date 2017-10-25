@@ -52,6 +52,10 @@ def _get_projects(providers):
 
 def _do_list(args):
     providers = _get_project_providers(args)
+
+    if args.provider_name:
+        providers = filter(lambda p: p.provider_name == args.provider_name, providers)
+
     _show_providers(providers)
 
     all_projects = _get_projects(providers)
@@ -140,6 +144,7 @@ def _main():
     list_parser = subparsers.add_parser("list", help="List projects")
     list_parser.set_defaults(func=_do_list)
     list_parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
+    list_parser.add_argument("--provider-name", "-p", dest="provider_name", default=None)
 
     dupes_parser = subparsers.add_parser("dupes", help="Show possible duplicate projects")
     dupes_parser.set_defaults(func=_do_dupes)
