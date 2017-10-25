@@ -16,9 +16,10 @@ _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
 _BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
 
-def _make_project(project_obj):
+def _make_project(provider, project_obj):
     clone_links = { x["name"]: x["href"] for x in project_obj["links"]["clone"] }
     return Project(
+        provider,
         project_obj["uuid"],
         project_obj["name"],
         project_obj["full_name"],
@@ -36,12 +37,15 @@ class Bitbucket(object):
         self._api_secret = api_secret
         self._client = None
 
+    @property
+    def provider_name(self): return "Bitbucket"
+
     def user_projects(self):
         projects = []
         url = make_url(_BITBUCKET_API_URL, "repositories", self._user)
         while url is not None:
             projects_obj = self._get(url)
-            projects.extend(map(_make_project, projects_obj["values"]))
+            projects.extend(map(lambda o: _make_project(self, o), projects_obj["values"]))
             url = projects_obj.get("next")
 
         return projects

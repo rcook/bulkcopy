@@ -3,7 +3,8 @@
 ##################################################
 
 class Project(object):
-    def __init__(self, id, name, full_name, description, scm, is_private, is_archived, clone_links):
+    def __init__(self, provider, id, name, full_name, description, scm, is_private, is_archived, clone_links):
+        self._provider = provider
         self._id = id
         self._name = name
         self._full_name = full_name
@@ -12,6 +13,9 @@ class Project(object):
         self._is_private = is_private
         self._is_archived = is_archived
         self._clone_links = clone_links
+
+    @property
+    def provider(self): return self._provider
 
     @property
     def id(self): return self._id

@@ -10,12 +10,13 @@ from repotoollib.util import make_url
 
 _GITHUB_API_URL = "https://api.github.com"
 
-def _make_project(project_obj):
+def _make_project(provider, project_obj):
     clone_links = {
         "https": project_obj["html_url"],
         "ssh": project_obj["ssh_url"]
     }
     return Project(
+        provider,
         int(project_obj["id"]),
         project_obj["name"],
         project_obj["full_name"],
@@ -30,6 +31,9 @@ class GitHub(object):
         self._user = user
         self._api_token = api_token
 
+    @property
+    def provider_name(self): return "GitHub"
+
     def user_projects(self):
         projects = []
 
@@ -40,7 +44,7 @@ class GitHub(object):
                 auth=(self._user, self._api_token))
             r.raise_for_status()
 
-            projects.extend(map(_make_project, r.json()))
+            projects.extend(map(lambda o: _make_project(self, o), r.json()))
             next_link = r.links.get("next")
             if next_link is None: break
             url = next_link["url"]

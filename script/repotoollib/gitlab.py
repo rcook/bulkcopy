@@ -16,12 +16,13 @@ def _encode_project_name_or_id(user, name_or_id):
     else:
         return urllib.quote_plus("{}/{}".format(user, name_or_id))
 
-def _make_project(project_obj):
+def _make_project(provider, project_obj):
     clone_links = {
         "https": project_obj["http_url_to_repo"],
         "ssh": project_obj["ssh_url_to_repo"]
     }
     return Project(
+        provider,
         int(project_obj["id"]),
         project_obj["name"],
         project_obj["name_with_namespace"],
@@ -35,6 +36,9 @@ class GitLab(object):
     def __init__(self, config_dir, user, api_token):
         self._user = user
         self._api_token = api_token
+
+    @property
+    def provider_name(self): return "GitLab"
 
     def user_projects(self):
         query = {
@@ -53,7 +57,7 @@ class GitLab(object):
             r = requests.get(url)
             r.raise_for_status()
 
-            projects.extend(map(_make_project, r.json()))
+            projects.extend(map(lambda o: _make_project(self, o), r.json()))
 
             page_id = r.headers.get("X-Next-Page")
             if page_id is None or len(page_id) == 0: break
