@@ -62,22 +62,26 @@ class GitLab(object):
         return projects
 
     def create_project(self, name, visibility="private"):
-        self._cache.provider.post(_GITLAB_API_URL, "projects", private_token=self._api_token, _data={
-            "name": name,
-            "visibility": visibility
-        })
+        url = make_url(
+            _GITLAB_API_URL,
+            "projects",
+            private_token=self._api_token)
+        r = requests.post(url, data={ "name": name, "visibility": visibility })
+        r.raise_for_status()
 
     def delete_project(self, name_or_id):
-        self._cache.provider.delete(
+        url = make_url(
             _GITLAB_API_URL,
             "projects",
-            _encode_project_name_or_id(self._user, name_or_id),
-            _data={ "private_token": self._api_token })
+            _encode_project_name_or_id(self._user, name_or_id))
+        r = requests.delete(url, data={ "private_token": self._api_token })
+        r.raise_for_status()
 
     def archive_project(self, name_or_id):
-        self._cache.provider.post(
+        url = make_url(
             _GITLAB_API_URL,
             "projects",
             _encode_project_name_or_id(self._user, name_or_id),
-            "archive",
-            _data={ "private_token": self._api_token })
+            "archive")
+        r = requests.post(url, data={ "private_token": self._api_token })
+        r.raise_for_status()
