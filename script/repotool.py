@@ -36,6 +36,8 @@ def _main_inner(args):
     for project in sorted(projects, key=lambda x: x.name):
         print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
 
+    print("Total: {} projects".format(len(projects)))
+
 def _main():
     default_config_dir = make_path(os.path.expanduser("~/.repotool"))
     default_config_path = make_path(default_config_dir, "config.yaml")

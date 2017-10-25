@@ -32,7 +32,7 @@ class GitHub(object):
 
     def user_projects(self):
         r = requests.get(
-            make_url(_GITHUB_API_URL, "users", args.user, "repos"),
+            make_url(_GITHUB_API_URL, "users", self._user, "repos"),
             auth=(self._user, self._api_token))
         r.raise_for_status()
         projects = map(_make_project, r.json())
