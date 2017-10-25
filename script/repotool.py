@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 import configargparse
+import getpass
 import itertools
 import os
 import re
@@ -57,7 +58,7 @@ def _main():
     default_config_path = make_path(default_config_dir, "config.yaml")
     parser = configargparse.ArgumentParser(default_config_files=[default_config_path])
     parser.add_argument("--config-dir", "-c", default=default_config_dir)
-    parser.add_argument("--user", "-u", default=os.environ.get("USERNAME"))
+    parser.add_argument("--user", "-u", default=getpass.getuser())
     parser.add_argument("--bitbucket-api-key", "-k", env_var="BITBUCKET_API_KEY", required=True, is_config_file=True)
     parser.add_argument("--bitbucket-api-secret", "-s", env_var="BITBUCKET_API_SECRET", required=True, is_config_file=True)
     parser.add_argument("--gitlab-api-token", "-t", env_var="GITLAB_API_TOKEN", required=True, is_config_file=True)
