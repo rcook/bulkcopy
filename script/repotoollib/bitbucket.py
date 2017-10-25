@@ -46,9 +46,8 @@ class Bitbucket(object):
 
         return projects
 
-    def delete_project(self, name):
-        r = self._client.delete(_BITBUCKET_API_URL, "repositories", self._user, name)
-        r.raise_for_status()
+    def delete_project(self, name_or_id):
+        self._delete(_BITBUCKET_API_URL, "repositories", self._user, name_or_id)
 
     def _get(self, *args, **kwargs):
         url = make_url(*args, **kwargs)
@@ -56,6 +55,12 @@ class Bitbucket(object):
         r = self._client.get(url)
         r.raise_for_status()
         return r.json()
+
+    def _delete(self, *args, **kwargs):
+        url = make_url(*args, **kwargs)
+        self._do_oauth_dance()
+        r = self._client.delete(url)
+        r.raise_for_status()
 
     def _do_oauth_dance(self):
         if self._client is None:
