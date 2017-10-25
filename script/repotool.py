@@ -97,13 +97,16 @@ def _do_info(args):
     table.show()
     print()
 
-def _confirm_delete(project):
+def _confirm_operation(project, op):
     table = project.make_table()
     print()
     print("PROJECT INFORMATION\n")
     table.show()
     print()
-    result = raw_input("Do you really want to delete project \"{}\" from {}? [Enter \"YES\" to confirm] ".format(project.name, project.provider.provider_name))
+    result = raw_input("Do you really want to {} project \"{}\" from {}? [Enter \"YES\" to confirm] ".format(
+        op,
+        project.name,
+        project.provider.provider_name))
     if result != "YES":
         return False
 
@@ -120,13 +123,28 @@ def _do_delete(args):
     provider = provider_map.get(args.provider_name)
     project = provider.get_project(args.project_name)
 
-    confirmation_token = _confirm_delete(project)
+    confirmation_token = _confirm_operation(project, "delete")
     if not confirmation_token:
         print("Aborted.")
         return
 
     project.delete(confirmation_token=confirmation_token)
     print("Project {} deleted.".format(project.name))
+
+def _do_archive(args):
+    providers = _get_project_providers(args)
+    provider_map = { p.provider_name: p for p in providers }
+
+    provider = provider_map.get(args.provider_name)
+    project = provider.get_project(args.project_name)
+
+    confirmation_token = _confirm_operation(project, "archive")
+    if not confirmation_token:
+        print("Aborted.")
+        return
+
+    project.archive(confirmation_token=confirmation_token)
+    print("Project {} archived.".format(project.name))
 
 def _main():
     default_config_dir = make_path(os.path.expanduser("~/.repotool"))
@@ -158,6 +176,11 @@ def _main():
     delete_parser.set_defaults(func=_do_delete)
     delete_parser.add_argument("provider_name", help="Name of project provider")
     delete_parser.add_argument("project_name", help="Project name")
+
+    archive_parser = subparsers.add_parser("archive", help="Archive project")
+    archive_parser.set_defaults(func=_do_archive)
+    archive_parser.add_argument("provider_name", help="Name of project provider")
+    archive_parser.add_argument("project_name", help="Project name")
 
     args = parser.parse_args()
     args.func(args)
