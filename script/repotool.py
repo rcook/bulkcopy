@@ -80,6 +80,50 @@ def _do_dupes(args):
 
     print("Total: {} groups".format(group_count))
 
+def _do_info(args):
+    providers = _get_project_providers(args)
+    provider_map = { p.provider_name: p for p in providers }
+
+    provider = provider_map.get(args.provider_name)
+    project = provider.project(args.project_name)
+
+    table = project.make_table()
+    print()
+    print("PROJECT INFORMATION\n")
+    table.show()
+    print()
+
+def _confirm_delete(project):
+    table = project.make_table()
+    print()
+    print("PROJECT INFORMATION\n")
+    table.show()
+    print()
+    result = raw_input("Do you really want to delete project \"{}\" from {}? [Enter \"YES\" to confirm] ".format(project.name, project.provider.provider_name))
+    if result != "YES":
+        return False
+
+    result = raw_input("Really? [Enter \"REALLY\" to confirm] ")
+    if result != "REALLY":
+        return False
+
+    return True
+
+def _do_delete(args):
+    providers = _get_project_providers(args)
+    provider_map = { p.provider_name: p for p in providers }
+
+    provider = provider_map.get(args.provider_name)
+    project = provider.project(args.project_name)
+
+    confirmation_token = _confirm_delete(project)
+    if not confirmation_token:
+        print("Aborted.")
+        return
+
+    project.delete(confirmation_token=confirmation_token)
+    print("Project {} deleted.".format(project.name))
+
 def _main():
     default_config_dir = make_path(os.path.expanduser("~/.repotool"))
     default_config_path = make_path(default_config_dir, "config.yaml")
@@ -94,11 +138,21 @@ def _main():
     subparsers = parser.add_subparsers(help="subcommand help")
 
     list_parser = subparsers.add_parser("list", help="List projects")
-    list_parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
     list_parser.set_defaults(func=_do_list)
+    list_parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
 
     dupes_parser = subparsers.add_parser("dupes", help="Show possible duplicate projects")
     dupes_parser.set_defaults(func=_do_dupes)
+
+    info_parser = subparsers.add_parser("info", help="Show information about project")
+    info_parser.set_defaults(func=_do_info)
+    info_parser.add_argument("provider_name", help="Name of project provider")
+    info_parser.add_argument("project_name", help="Project name")
+
+    delete_parser = subparsers.add_parser("delete", help="Delete project")
+    delete_parser.set_defaults(func=_do_delete)
+    delete_parser.add_argument("provider_name", help="Name of project provider")
+    delete_parser.add_argument("project_name", help="Project name")
 
     args = parser.parse_args()
     args.func(args)

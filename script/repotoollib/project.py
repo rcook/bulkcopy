@@ -2,6 +2,8 @@
 # Copyright (C) 2017, All rights reserved.
 ##################################################
 
+from repotoollib.table import Table
+
 class Project(object):
     def __init__(self, provider, id, name, full_name, description, scm, is_private, is_archived, clone_links):
         self._provider = provider
@@ -13,6 +15,9 @@ class Project(object):
         self._is_private = is_private
         self._is_archived = is_archived
         self._clone_links = clone_links
+
+    def __repr__(self):
+        return "{} ({}) {}".format(self._name, self._id, self._clone_links.get("ssh", "(unknown URL)"))
 
     @property
     def provider(self): return self._provider
@@ -39,3 +44,25 @@ class Project(object):
     def is_archived(self): return self._is_archived
 
     def clone_link(self, key): return self._clone_links[key]
+
+    def clone_link_keys(self): return self._clone_links.keys()
+
+    def make_table(self):
+        table = Table()
+        table.add_row("ID", self._id)
+        table.add_row("Name", self._name)
+        table.add_row("Full name", self._full_name)
+        table.add_row("Description", self._description)
+        table.add_row("SCM", self._scm)
+        table.add_row("Private", self._is_private)
+        table.add_row("Archived", self._is_archived)
+        clone_link_str = ", ".join(["{}: {}".format(k, self._clone_links[k]) for k in self._clone_links])
+        table.add_row("Clone links", clone_link_str)
+        table.add_row("Provider", self._provider.provider_name)
+        return table
+
+    def delete(self, confirmation_token=True):
+        if not confirmation_token:
+            raise RuntimeError("Dangerous operation disallowed")
+
+        self._provider.delete_project(self, confirmation_token=confirmation_token)

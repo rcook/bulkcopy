@@ -50,7 +50,10 @@ class Bitbucket(object):
 
         return projects
 
-    def delete_project(self, name_or_id):
+    def delete_project(self, name_or_id, confirmation_token=False):
+        if not confirmation_token:
+            raise RuntimeError("Dangerous operation disallowed")
+
         self._delete(_BITBUCKET_API_URL, "repositories", self._user, name_or_id)
 
     def _get(self, *args, **kwargs):
