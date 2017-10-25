@@ -26,6 +26,8 @@ def _dump_all(projects):
     for project in projects:
         print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
 
+    print("Total: {} projects".format(len(projects)))
+
 def _dump_similar(projects):
     groups = itertools.groupby(projects, lambda p: p.name)
     for key, group_iter in groups:
@@ -47,8 +49,8 @@ def _main_inner(args):
         all_projects.extend(service.user_projects())
 
     projects = sorted(_filter_projects(args.project_filter_expr, all_projects), key=lambda p: p.name)
-    #_dump_all(projects)
-    _dump_similar(projects)
+    _dump_all(projects)
+    #_dump_similar(projects)
 
 def _main():
     default_config_dir = make_path(os.path.expanduser("~/.repotool"))
