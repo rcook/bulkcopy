@@ -38,11 +38,14 @@ class GitLab(object):
         r = self._do_request("get", "projects", self._encode_project_name(project_name), private_token=self._api_token)
         return _make_project(self, r.json())
 
-    def get_projects(self):
+    def get_projects(self, include_archived=False):
         query = {
             "private_token": self._api_token,
             "per_page": 300
         }
+
+        if include_archived:
+            query["archived"] = True
 
         projects = []
         while True:

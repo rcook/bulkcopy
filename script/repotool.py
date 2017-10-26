@@ -42,10 +42,10 @@ def _get_project_providers(args):
 def _show_providers(providers):
     print("Providers: {}".format("(none)" if len(providers) == 0 else ", ".join(map(lambda p: p.provider_name, providers))))
 
-def _get_projects(providers):
+def _get_projects(providers, include_archived=False):
     all_projects = []
     for provider in providers:
-        all_projects.extend(provider.get_projects())
+        all_projects.extend(provider.get_projects(include_archived=include_archived))
 
     projects = sorted(all_projects, key=_PROJECT_KEY_FUNC)
     return projects
@@ -58,7 +58,7 @@ def _do_list(args):
 
     _show_providers(providers)
 
-    all_projects = _get_projects(providers)
+    all_projects = _get_projects(providers, include_archived=args.include_archived)
     projects = _filter_projects(args.project_filter_expr, all_projects)
     for project in projects:
         print("{} [{}] {}".format(project.name, project.id, project.clone_link("ssh")))
@@ -163,6 +163,7 @@ def _main():
     list_parser.set_defaults(func=_do_list)
     list_parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
     list_parser.add_argument("--provider-name", "-p", dest="provider_name", default=None)
+    list_parser.add_argument("--include-archived", "-a", dest="include_archived", action="store_true", default=False)
 
     dupes_parser = subparsers.add_parser("dupes", help="Show possible duplicate projects")
     dupes_parser.set_defaults(func=_do_dupes)

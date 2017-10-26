@@ -44,7 +44,7 @@ class Bitbucket(object):
         r = self._do_request("get", "repositories", self._user, project_name)
         return _make_project(self, r.json())
 
-    def get_projects(self):
+    def get_projects(self, include_archived=False):
         projects = []
         url = make_url(_BITBUCKET_API_URL, "repositories", self._user)
         while url is not None:

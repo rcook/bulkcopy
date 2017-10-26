@@ -38,7 +38,7 @@ class GitHub(object):
         r = self._do_request("get", "repos", self._user, project_name)
         return _make_project(self, r.json())
 
-    def get_projects(self):
+    def get_projects(self, include_archived=False):
         projects = []
 
         url = make_url(_GITHUB_API_URL, "users", self._user, "repos")
