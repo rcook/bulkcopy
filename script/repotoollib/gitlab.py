@@ -28,6 +28,15 @@ def _make_project(provider, project_obj):
 
 class GitLab(object):
     @staticmethod
+    def make_sample_config():
+        return {
+            "name": "gitlab",
+            "type": "gitlab",
+            "user": "user",
+            "api-token": "api-token"
+        }
+
+    @staticmethod
     def parse_config(config_dir, default_user, obj):
         name = obj["name"]
         user = obj.get("user", default_user)

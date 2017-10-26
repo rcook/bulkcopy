@@ -31,6 +31,16 @@ def _make_project(provider, project_obj):
 
 class Bitbucket(object):
     @staticmethod
+    def make_sample_config():
+        return {
+            "name": "bitbucket",
+            "type": "bitbucket",
+            "user": "user",
+            "api-key": "api-key",
+            "api-secret": "api-secret"
+        }
+
+    @staticmethod
     def parse_config(config_dir, default_user, obj):
         name = obj["name"]
         user = obj.get("user", default_user)

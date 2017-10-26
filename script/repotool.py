@@ -25,6 +25,24 @@ _PROVIDER_CLASSES = {
     "gitlab": GitLab
 }
 
+def _read_config(config_path):
+    if os.path.isfile(config_path):
+        with open(config_path, "rt") as f:
+            return yaml.load(f)
+    else:
+        config_obj = {}
+        provider_config_obj = []
+        config_obj["providers"] = provider_config_obj
+
+        for provider_type_name in sorted(_PROVIDER_CLASSES.keys()):
+            cls = _PROVIDER_CLASSES[provider_type_name]
+            provider_config_obj.append(cls.make_sample_config())
+
+        with open(config_path, "wt") as f:
+            f.write(yaml.dump(config_obj))
+
+        return config_obj
+
 def _filter_projects(filter_expr, projects):
     if filter_expr is None:
         return projects
@@ -139,8 +157,7 @@ def _main():
     default_config_path = make_path(default_config_dir, "config.yaml")
     default_user = getpass.getuser()
 
-    with open(default_config_path, "rt") as f:
-        config_obj = yaml.load(f)
+    config_obj = _read_config(default_config_path)
 
     provider_map = {}
     for provider_config_obj in config_obj.get("providers", []):
