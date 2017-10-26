@@ -30,12 +30,24 @@ def _make_project(provider, project_obj):
         clone_links)
 
 class Bitbucket(object):
-    def __init__(self, config_dir, user, api_key, api_secret):
+    @staticmethod
+    def parse_config(config_dir, default_user, obj):
+        name = obj["name"]
+        user = obj.get("user", default_user)
+        api_key = obj["api-key"]
+        api_secret = obj["api-secret"]
+        return Bitbucket(name, config_dir, user, api_key, api_secret)
+
+    def __init__(self, name, config_dir, user, api_key, api_secret):
+        self._name = name
         self._cached_token_path = make_path(config_dir, "bitbucket.token.yaml")
         self._user = user
         self._api_key = api_key
         self._api_secret = api_secret
         self._client = None
+
+    @property
+    def name(self): return self._name
 
     @property
     def provider_name(self): return "Bitbucket"

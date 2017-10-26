@@ -27,9 +27,20 @@ def _make_project(provider, project_obj):
         clone_links)
 
 class GitLab(object):
-    def __init__(self, config_dir, user, api_token):
+    @staticmethod
+    def parse_config(config_dir, default_user, obj):
+        name = obj["name"]
+        user = obj.get("user", default_user)
+        api_token = obj["api-token"]
+        return GitLab(name, config_dir, user, api_token)
+
+    def __init__(self, name, config_dir, user, api_token):
+        self._name = name
         self._user = user
         self._api_token = api_token
+
+    @property
+    def name(self): return self._name
 
     @property
     def provider_name(self): return "GitLab"
