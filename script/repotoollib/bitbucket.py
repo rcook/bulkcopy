@@ -10,7 +10,7 @@ from pyprelude.file_system import make_path
 from requests_oauthlib import OAuth2Session
 
 from repotoollib.project import Project
-from repotoollib.util import make_url
+from repotoollib.util import make_url, open_browser
 
 _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
@@ -94,8 +94,10 @@ class Bitbucket(object):
                 token_updater=_update_token)
 
             if token is None:
-                auth_url = self._client.authorization_url(_BITBUCKET_AUTH_URL)
-                print("Please go here and authorize: {}".format(auth_url[0]))
+                auth_url = self._client.authorization_url(_BITBUCKET_AUTH_URL)[0]
+                if not open_browser(auth_url):
+                    print("Please go here and authorize: {}".format(auth_url))
+
                 redirect_response = raw_input("Paste full redirect URL here: ")
                 token = self._client.fetch_token(
                     _BITBUCKET_TOKEN_URL,

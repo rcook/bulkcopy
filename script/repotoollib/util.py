@@ -2,6 +2,9 @@
 # Copyright (C) 2017, All rights reserved.
 ##################################################
 
+import os
+import subprocess
+import sys
 import urllib
 import urlparse
 
@@ -50,6 +53,21 @@ def make_url(*args, **kwargs):
     parts = list(urlparse.urlparse(base_url))
     parts[4] = query_string
     return urlparse.urlunparse(parts)
+
+# https://stackoverflow.com/questions/4216985/call-to-operating-system-to-open-url
+def open_browser(url):
+    if sys.platform == "win32":
+        os.startfile(url)
+        return True
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", url])
+        return True
+    else:
+        try:
+            subprocess.Popen(["xdg-open", url])
+            return True
+        except OSError:
+            return False
 
 if __name__ == "__main__":
     import doctest
