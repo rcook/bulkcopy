@@ -13,10 +13,18 @@ from pyprelude.util import unpack_args
 def make_url(*args, **kwargs):
     """
     >>> make_url("https://host/api", "users", "user-name", "projects", token="api_token")
+    'https://host/api/users/user-name/projects?token=api_token'
+    >>> make_url("https://host/api", "users", "user-name", "projects/", token="api_token")
+    'https://host/api/users/user-name/projects/?token=api_token'
+    >>> make_url("https://host/api", "users", "user-name", "projects", "/", token="api_token")
     'https://host/api/users/user-name/projects/?token=api_token'
     >>> make_url("https://host/api", "users", "user-name", "projects", [("token", "api_token"), ("aaa", "bbb")])
+    'https://host/api/users/user-name/projects?token=api_token&aaa=bbb'
+    >>> make_url("https://host/api", "users", "user-name", "projects/", [("token", "api_token"), ("aaa", "bbb")])
     'https://host/api/users/user-name/projects/?token=api_token&aaa=bbb'
     >>> make_url("https://host/api", "users", "user-name", "projects", [("token", "api_token"), ("aaa", "bbb")], other="value")
+    'https://host/api/users/user-name/projects?token=api_token&aaa=bbb&other=value'
+    >>> make_url("https://host/api", "users", "user-name", "projects/", [("token", "api_token"), ("aaa", "bbb")], other="value")
     'https://host/api/users/user-name/projects/?token=api_token&aaa=bbb&other=value'
     >>> make_url("https://host/api")
     'https://host/api'
@@ -24,8 +32,12 @@ def make_url(*args, **kwargs):
     'https://host/api/'
     >>> make_url("https://host/api", "users", "user-name", "projects")
     'https://host/api/users/user-name/projects'
+    >>> make_url("https://host/api", "users", "user-name", "projects/")
+    'https://host/api/users/user-name/projects/'
     >>> make_url("https://host/api", "users", "user-name", "projects", 12345)
     'https://host/api/users/user-name/projects/12345'
+    >>> make_url("https://host/api", "users", "user-name", "projects", 12345, "/")
+    'https://host/api/users/user-name/projects/12345/'
     """
     if len(args) == 1 and len(kwargs) == 0:
         # Return a single string unaltered
@@ -45,9 +57,12 @@ def make_url(*args, **kwargs):
         path_fragments = temp_args
         query_string = urllib.urlencode(kwargs)
 
-    base_url = "/".join(map(lambda x: str(x).strip("/"), path_fragments))
+    path_fragments = map(str, path_fragments)
+    has_trailing_slash = path_fragments[-1].endswith("/")
+    path_fragments = filter(lambda f: len(f) > 0, map(lambda f: f.strip("/"), path_fragments))
+    base_url = "/".join(path_fragments)
 
-    if len(query_string) > 0:
+    if has_trailing_slash:
         base_url += "/"
 
     parts = list(urlparse.urlparse(base_url))
