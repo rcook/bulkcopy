@@ -7,11 +7,11 @@ import os
 import yaml
 
 from pyprelude.file_system import make_path
+from pyprelude.url import make_url, open_browser
 from requests_oauthlib import OAuth2Session
 
 from repotoollib.owner import Owner
 from repotoollib.project import Project
-from repotoollib.util import make_url, open_browser
 
 _BITBUCKET_AUTH_URL = "https://bitbucket.org/site/oauth2/authorize"
 _BITBUCKET_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"

@@ -5,9 +5,10 @@
 import requests
 import urllib
 
+from pyprelude.url import make_url
+
 from repotoollib.owner import Owner
 from repotoollib.project import Project
-from repotoollib.util import make_url
 
 _GITHUB_API_URL = "https://api.github.com"
 
