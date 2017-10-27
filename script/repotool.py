@@ -173,7 +173,11 @@ def _main():
 
     list_parser = subparsers.add_parser("list", help="List projects")
     list_parser.set_defaults(func=_do_list)
-    list_parser.add_argument("--filter", "-f", dest="project_filter_expr", default=None)
+    list_parser.add_argument(
+        "--filter",
+        "-f",
+        dest="project_filter_expr",
+        default=None)
     list_parser.add_argument(
         "--provider",
         "-p",
@@ -181,22 +185,39 @@ def _main():
         dest="provider_names",
         default=None,
         choices=sorted(provider_map.keys()))
-    list_parser.add_argument("--include-archived", "-a", dest="include_archived", action="store_true", default=False)
+    list_parser.add_argument(
+        "--include-archived",
+        "-a",
+        dest="include_archived",
+        action="store_true",
+        default=False)
 
     info_parser = subparsers.add_parser("info", help="Show information about project")
     info_parser.set_defaults(func=_do_info)
-    info_parser.add_argument("provider_name", help="Name of project provider")
-    info_parser.add_argument("project_name", help="Project name")
+    info_parser.add_argument(
+        "provider_name",
+        help="Name of project provider")
+    info_parser.add_argument(
+        "project_name",
+        help="Project name")
 
     delete_parser = subparsers.add_parser("delete", help="Delete project")
     delete_parser.set_defaults(func=_do_delete)
-    delete_parser.add_argument("provider_name", help="Name of project provider")
-    delete_parser.add_argument("project_name", help="Project name")
+    delete_parser.add_argument(
+        "provider_name",
+        help="Name of project provider")
+    delete_parser.add_argument(
+        "project_name",
+        help="Project name")
 
     archive_parser = subparsers.add_parser("archive", help="Archive project")
     archive_parser.set_defaults(func=_do_archive)
-    archive_parser.add_argument("provider_name", help="Name of project provider")
-    archive_parser.add_argument("project_name", help="Project name")
+    archive_parser.add_argument(
+        "provider_name",
+        help="Name of project provider")
+    archive_parser.add_argument(
+        "project_name",
+        help="Project name")
 
     dupes_parser = subparsers.add_parser("dupes", help="Show possible duplicate projects")
     dupes_parser.set_defaults(func=_do_dupes)
