@@ -62,9 +62,6 @@ def _get_projects(providers, include_archived=False):
     projects = sorted(all_projects, key=_PROJECT_KEY_FUNC)
     return projects
 
-def _sorted_providers(provider_map):
-    return sorted(provider_map.values(), key=_PROVIDER_KEY_FUNC)
-
 def _confirm_operation(project, op):
     table = project.make_table()
     print()
@@ -85,10 +82,14 @@ def _confirm_operation(project, op):
     return True
 
 def _do_list(args, provider_map):
-    if args.provider_name:
-        providers = [provider_map[args.provider_name]]
+    if args.provider_names is not None:
+        providers = []
+        for provider_name in set(args.provider_names):
+            providers.append(provider_map[provider_name])
     else:
-        providers = _sorted_providers(provider_map)
+        providers = provider_map.values()
+
+    providers = sorted(providers, key=_PROVIDER_KEY_FUNC)
 
     _show_providers(providers)
 
@@ -176,7 +177,8 @@ def _main():
     list_parser.add_argument(
         "--provider",
         "-p",
-        dest="provider_name",
+        nargs="+",
+        dest="provider_names",
         default=None,
         choices=sorted(provider_map.keys()))
     list_parser.add_argument("--include-archived", "-a", dest="include_archived", action="store_true", default=False)
