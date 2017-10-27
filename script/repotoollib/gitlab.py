@@ -5,6 +5,7 @@
 import requests
 import urllib
 
+from repotoollib.owner import Owner
 from repotoollib.project import Project
 from repotoollib.util import make_url
 
@@ -17,6 +18,8 @@ def _make_project(provider, project_obj):
     }
     return Project(
         provider,
+        None,
+        provider._get_owner(project_obj["owner"]),
         int(project_obj["id"]),
         project_obj["name"],
         project_obj["name_with_namespace"],
@@ -47,6 +50,7 @@ class GitLab(object):
         self._name = name
         self._user = user
         self._api_token = api_token
+        self._owners = {}
 
     @property
     def name(self): return self._name
@@ -115,3 +119,16 @@ class GitLab(object):
         r = requests.request(method, url)
         r.raise_for_status()
         return r
+
+    def _get_owner(self, owner_obj):
+        id = owner_obj["id"]
+        owner = self._owners.get(id)
+        if owner is not None:
+            return owner
+
+        owner = Owner(
+            "user",
+            id,
+            owner_obj["username"])
+        self._owners[id] = owner
+        return owner

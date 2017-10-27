@@ -5,8 +5,10 @@
 from repotoollib.table import Table
 
 class Project(object):
-    def __init__(self, provider, id, name, full_name, description, scm, is_private, is_archived, clone_links):
+    def __init__(self, provider, source, owner, id, name, full_name, description, scm, is_private, is_archived, clone_links):
+        self._source = source
         self._provider = provider
+        self._owner = owner
         self._id = id
         self._name = name
         self._full_name = full_name
@@ -17,10 +19,20 @@ class Project(object):
         self._clone_links = clone_links
 
     def __repr__(self):
-        return "{} ({}) {}".format(self._name, self._id, self._clone_links.get("ssh", "(unknown URL)"))
+        return "{} ({}) {} ({})".format(
+            self._name,
+            self._id,
+            self._clone_links.get("ssh", "(unknown URL)"),
+            self._owner)
 
     @property
     def provider(self): return self._provider
+
+    @property
+    def source(self): return self._source
+
+    @property
+    def owner(self): return self._owner
 
     @property
     def id(self): return self._id
@@ -49,6 +61,7 @@ class Project(object):
 
     def make_table(self):
         table = Table()
+        table.add_row("Owner", self._owner)
         table.add_row("ID", self._id)
         table.add_row("Name", self._name)
         table.add_row("Full name", self._full_name)
@@ -59,6 +72,8 @@ class Project(object):
         clone_link_str = ", ".join(["{}: {}".format(k, self._clone_links[k]) for k in self._clone_links])
         table.add_row("Clone links", clone_link_str)
         table.add_row("Provider", self._provider.provider_name)
+        if self._source:
+            table.add_row("Source", self._source.full_name)
         return table
 
     def delete(self, confirmation_token=True):

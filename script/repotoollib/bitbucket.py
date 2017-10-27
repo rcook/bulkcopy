@@ -9,6 +9,7 @@ import yaml
 from pyprelude.file_system import make_path
 from requests_oauthlib import OAuth2Session
 
+from repotoollib.owner import Owner
 from repotoollib.project import Project
 from repotoollib.util import make_url, open_browser
 
@@ -20,6 +21,8 @@ def _make_project(provider, project_obj):
     clone_links = { x["name"]: x["href"] for x in project_obj["links"]["clone"] }
     return Project(
         provider,
+        None,
+        provider._get_owner(project_obj["owner"]),
         project_obj["uuid"],
         project_obj["name"],
         project_obj["full_name"],
@@ -55,6 +58,7 @@ class Bitbucket(object):
         self._api_key = api_key
         self._api_secret = api_secret
         self._client = None
+        self._owners = {}
 
     @property
     def name(self): return self._name
@@ -141,3 +145,16 @@ class Bitbucket(object):
             os.makedirs(parent_dir)
         with open(self._cached_token_path, "wt") as f:
             yaml.dump(token, f, default_flow_style=False)
+
+    def _get_owner(self, owner_obj):
+        id = owner_obj["uuid"]
+        owner = self._owners.get(id)
+        if owner is not None:
+            return owner
+
+        owner = Owner(
+            owner_obj["type"].lower(),
+            id,
+            owner_obj["username"])
+        self._owners[id] = owner
+        return owner

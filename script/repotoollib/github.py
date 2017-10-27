@@ -5,6 +5,7 @@
 import requests
 import urllib
 
+from repotoollib.owner import Owner
 from repotoollib.project import Project
 from repotoollib.util import make_url
 
@@ -15,8 +16,14 @@ def _make_project(provider, project_obj):
         "https": project_obj["html_url"],
         "ssh": project_obj["ssh_url"]
     }
+
+    source_obj = project_obj.get("source")
+    source = None if source_obj is None else _make_project(provider, source_obj)
+
     return Project(
         provider,
+        source,
+        provider._get_owner(project_obj["owner"]),
         int(project_obj["id"]),
         project_obj["name"],
         project_obj["full_name"],
@@ -47,6 +54,7 @@ class GitHub(object):
         self._name = name
         self._user = user
         self._api_token = api_token
+        self._owners = {}
 
     @property
     def name(self): return self._name
@@ -88,3 +96,16 @@ class GitHub(object):
         r = requests.request(method, url, auth=(self._user, self._api_token))
         r.raise_for_status()
         return r
+
+    def _get_owner(self, owner_obj):
+        id = owner_obj["id"]
+        owner = self._owners.get(id)
+        if owner is not None:
+            return owner
+
+        owner = Owner(
+            owner_obj["type"].lower(),
+            id,
+            owner_obj["login"])
+        self._owners[id] = owner
+        return owner
