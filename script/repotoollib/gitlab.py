@@ -16,17 +16,27 @@ def _make_project(provider, project_obj):
         "https": project_obj["http_url_to_repo"],
         "ssh": project_obj["ssh_url_to_repo"]
     }
+
+    owner_obj = project_obj.get("owner")
+    owner = None if owner_obj is None else provider._get_owner(owner_obj)
+
+    source_obj = project_obj.get("forked_from_project")
+    source = None if source_obj is None else _make_project(provider, source_obj)
+
+    visibility_str = project_obj.get("visibility")
+    is_private = False if visibility_str is None else visibility_str == "private"
+
     return Project(
         provider,
-        None,
-        provider._get_owner(project_obj["owner"]),
+        source,
+        owner,
         int(project_obj["id"]),
         project_obj["name"],
         project_obj["name_with_namespace"],
         project_obj["description"],
         "git",
-        project_obj["visibility"] == "private",
-        project_obj["archived"],
+        is_private,
+        project_obj.get("archived", False),
         clone_links)
 
 class GitLab(object):
