@@ -2,7 +2,7 @@
 # Copyright (C) 2017, All rights reserved.
 ##################################################
 
-from repotoollib.table import Table
+from repotool.table import Table
 
 class Owner(object):
     def __init__(self, type, id, user_name):

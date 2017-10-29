@@ -7,8 +7,8 @@ import urllib
 
 from pyprelude.url import make_url
 
-from repotoollib.owner import Owner
-from repotoollib.project import Project
+from repotool.owner import Owner
+from repotool.project import Project
 
 _GITHUB_API_URL = "https://api.github.com"
 

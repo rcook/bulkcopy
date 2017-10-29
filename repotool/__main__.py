@@ -13,9 +13,9 @@ import yaml
 
 from pyprelude.file_system import make_path
 
-from repotoollib.bitbucket import Bitbucket
-from repotoollib.github import GitHub
-from repotoollib.gitlab import GitLab
+from repotool.bitbucket import Bitbucket
+from repotool.github import GitHub
+from repotool.gitlab import GitLab
 
 _PROJECT_KEY_FUNC = lambda p: (p.name, p.scm)
 _PROVIDER_KEY_FUNC = lambda p: p.name

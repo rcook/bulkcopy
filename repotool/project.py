@@ -2,7 +2,7 @@
 # Copyright (C) 2017, All rights reserved.
 ##################################################
 
-from repotoollib.table import Table
+from repotool.table import Table
 
 class Project(object):
     def __init__(self, provider, source, owner, id, name, full_name, description, scm, is_private, is_archived, clone_links):
