@@ -3,5 +3,5 @@
 ##################################################
 
 __project_name__ = "repotool"
-__version__ = "0.1"
+__version__ = "0.2"
 __description__ = "Python wrappers around GitHub, GitLab and Bitbucket REST APIs"
