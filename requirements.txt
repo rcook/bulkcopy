@@ -1,4 +1,1 @@
-pyprelude >= 0.7
-pysimplevcs
-pyyaml
-requests_oauthlib
+.
