@@ -13,6 +13,7 @@ import yaml
 
 from pyprelude.file_system import make_path
 
+from repotool import __description__, __project_name__, __version__
 from repotool.bitbucket import Bitbucket
 from repotool.github import GitHub
 from repotool.gitlab import GitLab
@@ -168,6 +169,7 @@ def _main():
         provider_map[name] = cls.parse_config(default_config_dir, default_user, provider_config_obj)
 
     parser = argparse.ArgumentParser(description="Repository tool")
+    parser.add_argument("--version", action="version", version="{} version {}".format(__project_name__, __version__))
 
     subparsers = parser.add_subparsers(help="subcommand help")
 
