@@ -110,6 +110,11 @@ def _do_info(args, provider_map):
     table.show()
     print()
 
+def _do_create(args, provider_map):
+    provider = provider_map.get(args.provider_name)
+    provider.create_project(args.project_name, is_private=True)
+    print("Project {} created.".format(args.project_name))
+
 def _do_delete(args, provider_map):
     provider = provider_map.get(args.provider_name)
     project = provider.get_project(args.project_name)
@@ -198,27 +203,44 @@ def _main():
     info_parser.set_defaults(func=_do_info)
     info_parser.add_argument(
         "provider_name",
+        metavar="PROVIDERNAME",
         help="Name of project provider")
     info_parser.add_argument(
         "project_name",
+        metavar="PROJECTNAME",
+        help="Project name")
+
+    create_parser = subparsers.add_parser("create", help="Create project")
+    create_parser.set_defaults(func=_do_create)
+    create_parser.add_argument(
+        "provider_name",
+        metavar="PROVIDERNAME",
+        help="Name of project provider")
+    create_parser.add_argument(
+        "project_name",
+        metavar="PROJECTNAME",
         help="Project name")
 
     delete_parser = subparsers.add_parser("delete", help="Delete project")
     delete_parser.set_defaults(func=_do_delete)
     delete_parser.add_argument(
         "provider_name",
+        metavar="PROVIDERNAME",
         help="Name of project provider")
     delete_parser.add_argument(
         "project_name",
+        metavar="PROJECTNAME",
         help="Project name")
 
     archive_parser = subparsers.add_parser("archive", help="Archive project")
     archive_parser.set_defaults(func=_do_archive)
     archive_parser.add_argument(
         "provider_name",
+        metavar="PROVIDERNAME",
         help="Name of project provider")
     archive_parser.add_argument(
         "project_name",
+        metavar="PROJECTNAME",
         help="Project name")
 
     dupes_parser = subparsers.add_parser("dupes", help="Show possible duplicate projects")

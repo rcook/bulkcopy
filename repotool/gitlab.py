@@ -92,7 +92,8 @@ class GitLab(object):
 
         return projects
 
-    def create_project(self, project_name, visibility="private"):
+    def create_project(self, project_name, is_private=True):
+        visibility = "private" if is_private else "public"
         url = make_url(_GITLAB_API_URL, "projects", private_token=self._api_token)
         r = requests.post(url, data={ "name": project_name, "visibility": visibility })
         r.raise_for_status()
