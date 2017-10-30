@@ -1,5 +1,7 @@
 # repotool by Richard Cook
 
+[![View on PyPI](https://img.shields.io/pypi/v/repotool.svg)](https://pypi.python.org/pypi/repotool)
+
 Python wrappers around GitHub, GitLab and Bitbucket REST APIs
 
 ## Clone repository
