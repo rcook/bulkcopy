@@ -140,7 +140,7 @@ def _do_archive(args, provider_map):
     print("Project {} archived.".format(project.name))
 
 def _do_dupes(args, provider_map):
-    providers = _sorted_providers(provider_map)
+    providers = sorted(provider_map.values(), key=_PROVIDER_KEY_FUNC)
 
     _show_providers(providers)
 
