@@ -1,6 +1,5 @@
 /.eggs/
 /build/
 /dist/
-/env/
 /repotool.egg-info/
 *.pyc
